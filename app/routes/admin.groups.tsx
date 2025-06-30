@@ -2,7 +2,7 @@ import React from "react";
 import type { LoaderFunctionArgs, ActionFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useLoaderData, useActionData, Form, useNavigation } from "@remix-run/react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   UserCheck, 
   Search, 
@@ -60,7 +60,7 @@ export async function action({ request }: ActionFunctionArgs) {
         });
 
         console.log('✅ Admin Groups Action - Group created successfully');
-        return json({ success: true, message: "Group created successfully", group: newGroup });
+        return json({ success: true, message: "Group created successfully", group: newGroup, actionType: "create" });
       }
 
       case "updateGroup": {
@@ -81,7 +81,7 @@ export async function action({ request }: ActionFunctionArgs) {
         });
 
         console.log('✅ Admin Groups Action - Group updated successfully');
-        return json({ success: true, message: "Group updated successfully", group: updatedGroup });
+        return json({ success: true, message: "Group updated successfully", group: updatedGroup, actionType: "update" });
       }
 
       case "deleteGroup": {
@@ -97,7 +97,7 @@ export async function action({ request }: ActionFunctionArgs) {
         });
 
         console.log('✅ Admin Groups Action - Group deleted successfully');
-        return json({ success: true, message: "Group deleted successfully" });
+        return json({ success: true, message: "Group deleted successfully", groupId, actionType: "delete" });
       }
 
       default:
@@ -113,16 +113,42 @@ export default function AdminGroups() {
   const { groups } = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
   const navigation = useNavigation();
-  const { setGroups } = useStore();
+  const { setGroups, addGroup, updateGroup: updateGroupInStore, deleteGroup: deleteGroupFromStore } = useStore();
   
   const [searchTerm, setSearchTerm] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingGroup, setEditingGroup] = useState<any>(null);
 
   // Update store with fetched groups
-  React.useEffect(() => {
+  useEffect(() => {
     setGroups(groups);
   }, [groups, setGroups]);
+
+  // Handle successful actions - close modals and update store
+  useEffect(() => {
+    if (actionData?.success && navigation.state === "idle") {
+      // Handle different action types
+      switch (actionData.actionType) {
+        case "create":
+          if (actionData.group) {
+            addGroup(actionData.group);
+            setShowCreateModal(false);
+          }
+          break;
+        case "update":
+          if (actionData.group) {
+            updateGroupInStore(actionData.group.id, actionData.group);
+            setEditingGroup(null);
+          }
+          break;
+        case "delete":
+          if (actionData.groupId) {
+            deleteGroupFromStore(actionData.groupId);
+          }
+          break;
+      }
+    }
+  }, [actionData, navigation.state, addGroup, updateGroupInStore, deleteGroupFromStore]);
 
   const filteredGroups = groups.filter(group => 
     !searchTerm || 
@@ -175,7 +201,7 @@ export default function AdminGroups() {
 
       {/* Action Feedback */}
       {actionData?.success && (
-        <div className="rounded-md bg-green-50 p-4">
+        <div className="rounded-md bg-green-50 p-4 border border-green-200">
           <div className="flex">
             <CheckCircle className="h-5 w-5 text-green-400" />
             <div className="ml-3">
@@ -188,7 +214,7 @@ export default function AdminGroups() {
       )}
 
       {actionData?.error && (
-        <div className="rounded-md bg-red-50 p-4">
+        <div className="rounded-md bg-red-50 p-4 border border-red-200">
           <div className="flex">
             <AlertCircle className="h-5 w-5 text-red-400" />
             <div className="ml-3">
