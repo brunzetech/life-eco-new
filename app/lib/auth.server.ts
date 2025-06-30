@@ -354,13 +354,8 @@ export async function deleteGroup(groupId: string) {
   try {
     console.log('🗑️ Auth Server - Deleting group:', groupId);
     
-    // First, remove group association from users
-    await supabaseAdmin
-      .from("profiles")
-      .update({ group_id: null })
-      .eq("group_id", groupId);
-    
-    // Then delete the group
+    // Delete the group directly - the ON DELETE SET NULL constraint
+    // will automatically handle setting group_id to null for associated profiles
     const { error } = await supabaseAdmin
       .from("groups")
       .delete()
