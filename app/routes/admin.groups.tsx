@@ -331,15 +331,12 @@ export default function AdminGroups() {
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Type</label>
-                  <select
+                  <input
+                    type="text"
                     name="type"
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                  >
-                    <option value="standard">Standard</option>
-                    <option value="premium">Premium</option>
-                    <option value="admin">Admin</option>
-                    <option value="super_admin">Super Admin</option>
-                  </select>
+                    placeholder="Enter group type (e.g., standard, premium, admin)"
+                  />
                 </div>
                 
                 <div className="flex justify-end space-x-3 pt-4">
@@ -400,16 +397,13 @@ export default function AdminGroups() {
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Type</label>
-                  <select
+                  <input
+                    type="text"
                     name="type"
                     defaultValue={editingGroup.type}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                  >
-                    <option value="standard">Standard</option>
-                    <option value="premium">Premium</option>
-                    <option value="admin">Admin</option>
-                    <option value="super_admin">Super Admin</option>
-                  </select>
+                    placeholder="Enter group type (e.g., standard, premium, admin)"
+                  />
                 </div>
                 
                 <div className="flex justify-end space-x-3 pt-4">
