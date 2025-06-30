@@ -354,6 +354,26 @@ export async function deleteGroup(groupId: string) {
   try {
     console.log('🗑️ Auth Server - Deleting group:', groupId);
     
+    // Add connection test before attempting delete
+    try {
+      // Test connection with a simple query first
+      const { error: testError } = await supabaseAdmin
+        .from("groups")
+        .select("id")
+        .eq("id", groupId)
+        .limit(1);
+        
+      if (testError) {
+        console.error("❌ Auth Server - Connection test failed:", testError);
+        throw new Error(`Connection test failed: ${testError.message}`);
+      }
+      
+      console.log('✅ Auth Server - Connection test passed');
+    } catch (connectionError) {
+      console.error("❌ Auth Server - Failed to connect to Supabase:", connectionError);
+      throw new Error(`Failed to connect to database. Please check your SUPABASE_URL and network connection.`);
+    }
+    
     // Delete the group directly - the ON DELETE SET NULL constraint
     // will automatically handle setting group_id to null for associated profiles
     const { error } = await supabaseAdmin
@@ -370,6 +390,12 @@ export async function deleteGroup(groupId: string) {
     return true;
   } catch (error) {
     console.error("❌ Auth Server - Error in deleteGroup:", error);
+    
+    // Provide more specific error messages
+    if (error.message.includes('fetch failed')) {
+      throw new Error('Network connection failed. Please check your SUPABASE_URL environment variable and ensure it is accessible.');
+    }
+    
     throw error;
   }
 }
