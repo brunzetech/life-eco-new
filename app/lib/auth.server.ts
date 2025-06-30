@@ -1,4 +1,5 @@
 import { createServerClient, parse, serialize } from "@supabase/ssr";
+import { createClient } from "@supabase/supabase-js";
 import { redirect } from "@remix-run/node";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabaseAdmin } from "./supabase-admin";
@@ -337,7 +338,19 @@ export async function updateGroup(groupId: string, updates: any) {
   try {
     console.log('📝 Auth Server - Updating group:', groupId);
     
-    const { data, error } = await supabaseAdmin
+    // Create a fresh Supabase client to avoid schema cache issues
+    const freshSupabaseAdmin = createClient(
+      process.env.SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        },
+      }
+    );
+    
+    const { data, error } = await freshSupabaseAdmin
       .from("groups")
       .update({
         ...updates,
