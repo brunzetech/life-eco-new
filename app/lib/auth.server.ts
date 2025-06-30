@@ -1,5 +1,4 @@
 import { createServerClient, parse, serialize } from "@supabase/ssr";
-import { createClient } from "@supabase/supabase-js";
 import { redirect } from "@remix-run/node";
 import type { Session, User } from "@supabase/supabase-js";
 import { supabaseAdmin } from "./supabase-admin";
@@ -234,7 +233,7 @@ export async function getAllUsers() {
       .from("profiles")
       .select(`
         *,
-        groups!fk_profiles_group_id (
+        groups (
           id,
           name,
           type
@@ -263,7 +262,7 @@ export async function getAllGroups() {
       .from("groups")
       .select(`
         *,
-        member_count:profiles!fk_profiles_group_id(count)
+        member_count:profiles!group_id(count)
       `)
       .order('created_at', { ascending: false });
 
@@ -286,10 +285,7 @@ export async function updateUserProfile(userId: string, updates: any) {
     
     const { data, error } = await supabaseAdmin
       .from("profiles")
-      .update({
-        ...updates,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updates)
       .eq("id", userId)
       .select()
       .single();
@@ -313,11 +309,7 @@ export async function createGroup(groupData: any) {
     
     const { data, error } = await supabaseAdmin
       .from("groups")
-      .insert({
-        ...groupData,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      })
+      .insert(groupData)
       .select()
       .single();
 
@@ -338,24 +330,9 @@ export async function updateGroup(groupId: string, updates: any) {
   try {
     console.log('📝 Auth Server - Updating group:', groupId);
     
-    // Create a fresh Supabase client to avoid schema cache issues
-    const freshSupabaseAdmin = createClient(
-      process.env.SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-      }
-    );
-    
-    const { data, error } = await freshSupabaseAdmin
+    const { data, error } = await supabaseAdmin
       .from("groups")
-      .update({
-        ...updates,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updates)
       .eq("id", groupId)
       .select()
       .single();
