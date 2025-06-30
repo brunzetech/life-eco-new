@@ -262,7 +262,7 @@ export async function getAllGroups() {
       .from("groups")
       .select(`
         *,
-        member_count:profiles!group_id(count)
+        member_count:profiles!profiles_group_id_fkey(count)
       `)
       .order('created_at', { ascending: false });
 
