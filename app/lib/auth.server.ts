@@ -233,7 +233,7 @@ export async function getAllUsers() {
       .from("profiles")
       .select(`
         *,
-        group_id!inner(
+        profiles_group_id_fkey!inner(
           id,
           name,
           type
