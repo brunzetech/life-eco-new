@@ -233,7 +233,7 @@ export async function getAllUsers() {
       .from("profiles")
       .select(`
         *,
-        groups (
+        groups!fk_profiles_group_id (
           id,
           name,
           type
@@ -262,7 +262,7 @@ export async function getAllGroups() {
       .from("groups")
       .select(`
         *,
-        member_count:profiles!group_id(count)
+        member_count:profiles!fk_profiles_group_id(count)
       `)
       .order('created_at', { ascending: false });
 
